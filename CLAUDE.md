@@ -38,11 +38,13 @@ app/page.tsx            funnel state machine + payment-return + two-pane shell
 app/layout.tsx          root layout, fonts, metadata
 app/globals.css         THE design system (ported verbatim) + desktop two-pane
 app/mock-pay/page.tsx   zero-config stand-in for PayRex hosted checkout
+app/privacy, app/terms  real legal routes (genuine starter content)
 app/api/generate/route  studio photo generation (sharp) — the AI seam
 app/api/checkout/route  PayRex CheckoutSession + mock fallback
 components/ui.tsx        primitives: Portrait, BeforeAfter, Btn, Swatches, ...
 components/CameraCapture real getUserMedia camera + file fallback
-components/PreviewRail   desktop right-pane live preview (hidden on mobile)
+components/PreviewRail   desktop right-pane preview + LandingAside (hidden on mobile)
+components/SiteChrome    brand + nav: SiteHeader/Footer (desktop) + landing mobile nav
 components/screens/      ScreensA (capture) / B (catalog) / C (order)
 lib/data.ts             looks + formats catalog (+ `px` target sizes)
 lib/image.ts            client canvas: downscale + full-res final render
@@ -71,12 +73,22 @@ lib/types.ts            Order + catalog types
 - **Camera = real `getUserMedia`** (`components/CameraCapture.tsx`), live video +
   canvas shutter, mirrored to match the selfie preview. Falls back to the native
   `<input capture>` if denied/unavailable. Needs HTTPS (Vercel ✓, localhost ✓).
-- **Desktop = two-pane studio (≥900px); mobile = single column, unchanged.**
-  Left pane = controls (the screens, untouched); right `PreviewRail` shows the
-  real photo in the live selection. Rail/deskbar are CSS-hidden on mobile (no JS
-  breakpoint). Screens with a big inline hero (preview slider, confirmation photo)
-  mark it `.pa-hide-desktop` since the rail carries it. Landing + processing stay
-  full-bleed (in `FULL_BLEED` in `page.tsx`).
+- **Desktop = one consistent focus card (≥900px); mobile = single column,
+  unchanged.** Every screen uses the **same** card size (no width jump). Inside:
+  funnel + landing are two-pane (controls left + right pane via `.pa-split`),
+  processing is full-card immersive. The right pane is `PreviewRail` (funnel,
+  shows the real photo in the live selection) or `LandingAside` (landing proof
+  sheet). Screens with a big inline hero (landing proof sheet, preview slider,
+  confirmation photo) mark it `.pa-hide-desktop` since the right pane carries it.
+- **Brand + nav live OUTSIDE the card (desktop), and on mobile landing.**
+  `SiteHeader`/`SiteFooter` are the page chrome on desktop (CSS-hidden on mobile
+  in the app shell, but always shown on the legal pages). On mobile the **landing**
+  screen carries its own `LandingTopBar` (brand + menu) and `LandingFooter`; the
+  funnel stays distraction-free (no global bar). Nav links are **real**: How it
+  works / Pricing scroll to landing sections (`#how-it-works`, `#pricing`, also
+  reachable via `/#…` hash from the legal routes); Privacy / Terms are real routes;
+  Contact is a mailto (`hello@papicture.com`, a placeholder address). The standard
+  disclaimer lives in the footer on both platforms.
 
 ## Conventions
 

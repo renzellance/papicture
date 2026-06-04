@@ -79,3 +79,36 @@ export function PreviewRail({ order, screen }: { order: Order; screen: string })
     </aside>
   );
 }
+
+/* landing's right-pane visual: the "one selfie, every size" proof sheet */
+export function LandingAside() {
+  const sheet = [
+    { name: '1×1 ID', dim: '1 IN', bg: '#ffffff', ratio: 1, circle: false },
+    { name: '2×2 ID', dim: '2 IN', bg: '#ffffff', ratio: 1, circle: false },
+    { name: 'Passport', dim: '35×45', bg: '#f4f2ec', ratio: 0.778, circle: false },
+    { name: 'LinkedIn', dim: '4:5', bg: '#e9eaec', ratio: 1, circle: true },
+  ];
+  return (
+    <aside className="pa-rail">
+      <div className="pa-rail-inner">
+        <span className="pa-rail-eyebrow">One photo, every size</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, width: 'min(380px, 90%)' }}>
+          {sheet.map((c) => (
+            <div key={c.name} style={{ background: '#fff', borderRadius: 'var(--r-sm)', padding: 10, boxShadow: 'var(--shadow-lg)' }}>
+              <div style={{ position: 'relative', height: 132, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper-2)', borderRadius: 6, overflow: 'hidden' }}>
+                <Portrait variant="studio" bg={c.bg} ratio={c.ratio} circle={c.circle}
+                          style={{ borderRadius: c.circle ? '50%' : 0, height: '100%', width: 'auto' }} />
+                {!c.circle && <FrameMarks />}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, gap: 6 }}>
+                <span className="pa-ref" style={{ color: 'var(--ink)' }}>{c.name}</span>
+                <span className="pa-dim">{c.dim}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="pa-rail-cap"><div className="l2">The same selfie, sized for each one.</div></div>
+      </div>
+    </aside>
+  );
+}

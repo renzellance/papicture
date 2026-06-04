@@ -1,5 +1,5 @@
 'use client';
-/* papicture — app shell: funnel state machine + payment redirect handling */
+/* papicture — app shell: funnel state machine + payment redirect + desktop chrome */
 
 import React, { useState, useEffect } from 'react';
 import type { Order } from '@/lib/types';
@@ -7,23 +7,24 @@ import { loadOrder, saveOrder, clearOrder } from '@/lib/storage';
 import { LandingScreen, UploadScreen, ProcessingScreen, PreviewScreen } from '@/components/screens/ScreensA';
 import { LookScreen, FormatScreen } from '@/components/screens/ScreensB';
 import { FulfillmentScreen, CheckoutScreen, ConfirmationScreen } from '@/components/screens/ScreensC';
-import { PreviewRail } from '@/components/PreviewRail';
+import { PreviewRail, LandingAside } from '@/components/PreviewRail';
+import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 
 const IMMERSIVE: Record<string, boolean> = { processing: true };
-// landing + processing stay full-bleed; the rest get the desktop preview rail
-const FULL_BLEED: Record<string, boolean> = { landing: true, processing: true };
 
 export default function App() {
   const [screen, setScreen] = useState('landing');
   const [order, setOrder] = useState<Order>({});
   const [ready, setReady] = useState(false);
+  const [pendingScroll, setPendingScroll] = useState<string | null>(null);
 
-  // restore funnel + react to the payment-gateway return, then clean the URL
+  // restore funnel + react to the payment-gateway return / deep-link hash
   useEffect(() => {
     const restored = loadOrder();
     const params = new URLSearchParams(window.location.search);
     const paid = params.get('paid');
     const orderNo = params.get('order') || undefined;
+    const hash = window.location.hash ? window.location.hash.slice(1) : '';
 
     if (paid === '1' && restored) {
       setOrder({ ...restored, ...(orderNo ? { orderNo } : {}) });
@@ -31,18 +32,26 @@ export default function App() {
     } else if (paid === '0' && restored) {
       setOrder(restored);
       setScreen('checkout');
-    } else if (restored && restored.studio) {
-      setOrder(restored);
+    } else {
+      if (restored && restored.studio) setOrder(restored);
+      if (hash) { setScreen('landing'); setPendingScroll(hash); }
     }
 
-    if (paid) window.history.replaceState({}, '', window.location.pathname);
+    if (paid || hash) window.history.replaceState({}, '', window.location.pathname);
     setReady(true);
   }, []);
 
   // mirror funnel state so it survives the redirect
+  useEffect(() => { if (ready) saveOrder(order); }, [order, ready]);
+
+  // perform a pending section scroll once landing is rendered
   useEffect(() => {
-    if (ready) saveOrder(order);
-  }, [order, ready]);
+    if (screen === 'landing' && pendingScroll) {
+      const id = pendingScroll;
+      requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      setPendingScroll(null);
+    }
+  }, [screen, pendingScroll]);
 
   const go = (next: string, patch?: Partial<Order>) => {
     if (patch) setOrder((o) => ({ ...o, ...patch }));
@@ -51,8 +60,14 @@ export default function App() {
   const set = (patch: Partial<Order>) => setOrder((o) => ({ ...o, ...patch }));
   const reset = () => { clearOrder(); setOrder({}); setScreen('landing'); };
 
+  const goToSection = (id: string) => {
+    if (screen === 'landing') document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else { setPendingScroll(id); setScreen('landing'); }
+  };
+
   const immersive = IMMERSIVE[screen];
-  const twoPane = !FULL_BLEED[screen];
+  const full = screen === 'processing';   // single-pane, fills the card
+  const split = !full;                     // every other screen has a right pane
 
   const renderScreen = () => {
     switch (screen) {
@@ -69,19 +84,22 @@ export default function App() {
     }
   };
 
+  const rightPane = full ? null : (screen === 'landing' ? <LandingAside /> : <PreviewRail order={order} screen={screen} />);
+
   return (
     <div className="pa-host">
-      <div className={'pa-device' + (twoPane ? ' pa-two' : '')}>
+      <SiteHeader onHome={() => go('landing')} onSection={goToSection} />
+      <div className={'pa-device' + (split ? ' pa-split' : '')}>
         <div className="pa-pane-left">
-          <div className="pa-deskbar">papicture<span style={{ color: 'var(--accent)' }}>.</span></div>
           <div className={'pa-app' + (immersive ? ' pa-block-accent' : '')} style={{ color: immersive ? '#fff' : undefined }}>
             <div key={screen} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
               {ready ? renderScreen() : null}
             </div>
           </div>
         </div>
-        {ready && twoPane && <PreviewRail order={order} screen={screen} />}
+        {ready && rightPane}
       </div>
+      <SiteFooter onSection={goToSection} />
     </div>
   );
 }

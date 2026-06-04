@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Icon, Portrait, FrameMarks, Watermark, BeforeAfter, Btn, Notice } from '@/components/ui';
 import { CameraCapture } from '@/components/CameraCapture';
+import { LandingTopBar, LandingFooter, scrollToId } from '@/components/SiteChrome';
 import { PRICE } from '@/lib/data';
 import { downscaleImage } from '@/lib/image';
 import type { ScreenProps } from './types';
@@ -24,11 +25,8 @@ export function LandingScreen({ go }: ScreenProps) {
   return (
     <>
       <div className="pa-scroll pa-fade">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px 10px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, letterSpacing: '-.02em' }}>
-            papicture<span style={{ color: 'var(--accent)' }}>.</span>
-          </div>
-        </div>
+        {/* brand + nav — mobile only (desktop brand lives in the page header) */}
+        <LandingTopBar onSection={scrollToId} />
 
         <div className="pa-block pa-block-ink" style={{ margin: '4px 14px 0', borderRadius: 'var(--r-lg)', padding: '22px 20px 20px' }}>
           <h1 className="pa-mega" style={{ color: '#fff' }}>One selfie. Every photo you need to submit.</h1>
@@ -36,33 +34,36 @@ export function LandingScreen({ go }: ScreenProps) {
             One selfie, sized correctly for Philippine IDs, visas and work profiles.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 22, marginBottom: 12 }}>
-            <span className="pa-ref" style={{ color: 'rgba(255,255,255,.6)' }}>One photo, every size</span>
-            <span style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.18)' }} />
-          </div>
+          {/* proof sheet — mobile only; on desktop the right aside carries it */}
+          <div className="pa-hide-desktop">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 22, marginBottom: 12 }}>
+              <span className="pa-ref" style={{ color: 'rgba(255,255,255,.6)' }}>One photo, every size</span>
+              <span style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.18)' }} />
+            </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {sheet.map((c) => (
-              <div key={c.name} style={{ background: '#fff', borderRadius: 'var(--r-sm)', padding: 9, boxShadow: 'var(--shadow-lg)' }}>
-                <div style={{ position: 'relative', height: 116, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper-2)', borderRadius: 6, overflow: 'hidden' }}>
-                  <Portrait variant="studio" bg={c.bg} ratio={c.ratio} circle={c.circle}
-                            style={{ borderRadius: c.circle ? '50%' : 0, height: '100%', width: 'auto' }} />
-                  {!c.circle && <FrameMarks />}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {sheet.map((c) => (
+                <div key={c.name} style={{ background: '#fff', borderRadius: 'var(--r-sm)', padding: 9, boxShadow: 'var(--shadow-lg)' }}>
+                  <div style={{ position: 'relative', height: 116, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper-2)', borderRadius: 6, overflow: 'hidden' }}>
+                    <Portrait variant="studio" bg={c.bg} ratio={c.ratio} circle={c.circle}
+                              style={{ borderRadius: c.circle ? '50%' : 0, height: '100%', width: 'auto' }} />
+                    {!c.circle && <FrameMarks />}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, gap: 6 }}>
+                    <span className="pa-ref" style={{ color: 'var(--ink)' }}>{c.name}</span>
+                    <span className="pa-dim">{c.dim}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, gap: 6 }}>
-                  <span className="pa-ref" style={{ color: 'var(--ink)' }}>{c.name}</span>
-                  <span className="pa-dim">{c.dim}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <p style={{ color: 'rgba(255,255,255,.55)', marginTop: 14, fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.03em' }}>
+              The same selfie, sized for each one.
+            </p>
           </div>
-          <p style={{ color: 'rgba(255,255,255,.55)', marginTop: 14, fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.03em' }}>
-            The same selfie, sized for each one.
-          </p>
         </div>
 
         <div className="pa-pad" style={{ paddingTop: 24 }}>
-          <p className="pa-eyebrow">How it works</p>
+          <p id="how-it-works" className="pa-eyebrow" style={{ scrollMarginTop: 16 }}>How it works</p>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {steps.map(([n, t, d], i) => (
               <div key={n} style={{ display: 'flex', gap: 16, alignItems: 'baseline', padding: '14px 0',
@@ -76,7 +77,7 @@ export function LandingScreen({ go }: ScreenProps) {
             ))}
           </div>
 
-          <div className="pa-card" style={{ padding: '4px 16px', marginTop: 22 }}>
+          <div id="pricing" className="pa-card" style={{ padding: '4px 16px', marginTop: 22, scrollMarginTop: 16 }}>
             <div className="pa-sumrow">
               <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Icon name="mail" size={17} style={{ color: 'var(--accent)' }} /><span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Digital file</span></span>
               <span className="v" style={{ fontFamily: 'var(--font-display)', fontSize: 16 }}>{PRICE.currency}{PRICE.digital}</span>
@@ -94,6 +95,8 @@ export function LandingScreen({ go }: ScreenProps) {
           </p>
         </div>
 
+        {/* footer with nav + disclaimer — mobile only */}
+        <LandingFooter onSection={scrollToId} />
         <div style={{ height: 8 }} />
       </div>
 
