@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Icon, Portrait, FrameMarks, Watermark, BeforeAfter, Btn, Notice } from '@/components/ui';
+import { CameraCapture } from '@/components/CameraCapture';
 import { PRICE } from '@/lib/data';
 import { downscaleImage } from '@/lib/image';
 import type { ScreenProps } from './types';
@@ -109,6 +110,7 @@ export function UploadScreen({ go, set }: ScreenProps) {
   const camRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [camOpen, setCamOpen] = useState(false);
 
   const guidance: [string, string][] = [
     ['face', 'Face the camera directly'],
@@ -133,7 +135,16 @@ export function UploadScreen({ go, set }: ScreenProps) {
     }
   };
 
+  const onCapture = (dataURL: string) => { set({ original: dataURL, source: 'camera' }); go('processing'); };
+
   return (
+    <>
+    {camOpen && (
+      <CameraCapture
+        onCapture={onCapture}
+        onClose={() => setCamOpen(false)}
+        onFallback={() => { setCamOpen(false); camRef.current?.click(); }} />
+    )}
     <div className="pa-scroll pa-fade">
       <div className="pa-pad">
         <button className="pa-iconbtn" onClick={() => go('landing')} style={{ marginBottom: 14 }}><Icon name="arrowL" size={18} /></button>
@@ -147,7 +158,7 @@ export function UploadScreen({ go, set }: ScreenProps) {
         <input ref={camRef} type="file" accept="image/*" capture="user" hidden onChange={onFile('camera')} />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 20, opacity: busy ? 0.6 : 1, pointerEvents: busy ? 'none' : 'auto' }}>
-          <button className="pa-tile pa-block-ink" style={{ padding: 18, textAlign: 'left', color: '#fff', border: 'none' }} onClick={() => camRef.current?.click()}>
+          <button className="pa-tile pa-block-ink" style={{ padding: 18, textAlign: 'left', color: '#fff', border: 'none' }} onClick={() => setCamOpen(true)}>
             <Icon name="camera" size={26} />
             <div className="pa-h3" style={{ color: '#fff', marginTop: 28 }}>Take photo</div>
             <div className="pa-small" style={{ color: 'rgba(255,255,255,.6)', marginTop: 2 }}>Use your camera</div>
@@ -174,6 +185,7 @@ export function UploadScreen({ go, set }: ScreenProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -288,7 +300,7 @@ export function PreviewScreen({ go, state }: ScreenProps) {
           <p className="pa-lead" style={{ marginTop: 8 }}>Drag the slider to compare it with your original.</p>
         </div>
 
-        <div style={{ padding: '0 18px' }}>
+        <div className="pa-hide-desktop" style={{ padding: '0 18px' }}>
           <BeforeAfter bg="#ffffff" ratio={1.12} before={state.original} after={state.studio} />
           <p className="pa-small" style={{ marginTop: 10, textAlign: 'center' }}>
             This preview is lower resolution. Your photo downloads at full resolution, no watermark. You only pay when you download it.

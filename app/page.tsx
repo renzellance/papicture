@@ -7,8 +7,11 @@ import { loadOrder, saveOrder, clearOrder } from '@/lib/storage';
 import { LandingScreen, UploadScreen, ProcessingScreen, PreviewScreen } from '@/components/screens/ScreensA';
 import { LookScreen, FormatScreen } from '@/components/screens/ScreensB';
 import { FulfillmentScreen, CheckoutScreen, ConfirmationScreen } from '@/components/screens/ScreensC';
+import { PreviewRail } from '@/components/PreviewRail';
 
 const IMMERSIVE: Record<string, boolean> = { processing: true };
+// landing + processing stay full-bleed; the rest get the desktop preview rail
+const FULL_BLEED: Record<string, boolean> = { landing: true, processing: true };
 
 export default function App() {
   const [screen, setScreen] = useState('landing');
@@ -49,6 +52,7 @@ export default function App() {
   const reset = () => { clearOrder(); setOrder({}); setScreen('landing'); };
 
   const immersive = IMMERSIVE[screen];
+  const twoPane = !FULL_BLEED[screen];
 
   const renderScreen = () => {
     switch (screen) {
@@ -67,12 +71,16 @@ export default function App() {
 
   return (
     <div className="pa-host">
-      <div className="pa-device">
-        <div className={'pa-app' + (immersive ? ' pa-block-accent' : '')} style={{ color: immersive ? '#fff' : undefined }}>
-          <div key={screen} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            {ready ? renderScreen() : null}
+      <div className={'pa-device' + (twoPane ? ' pa-two' : '')}>
+        <div className="pa-pane-left">
+          <div className="pa-deskbar">papicture<span style={{ color: 'var(--accent)' }}>.</span></div>
+          <div className={'pa-app' + (immersive ? ' pa-block-accent' : '')} style={{ color: immersive ? '#fff' : undefined }}>
+            <div key={screen} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              {ready ? renderScreen() : null}
+            </div>
           </div>
         </div>
+        {ready && twoPane && <PreviewRail order={order} screen={screen} />}
       </div>
     </div>
   );

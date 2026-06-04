@@ -481,6 +481,49 @@ html, body { margin: 0; padding: 0; height: 100%; background: #d9d4ca; overscrol
 .pa-pays { display: flex; flex-wrap: wrap; gap: 7px; }
 .pa-pay { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); background: #fff; border: 1px solid var(--line); padding: 6px 9px; border-radius: 7px; }
 
-/* spinner (mock pay) */
+/* spinner (mock pay / camera) */
 .pa-spin { width: 20px; height: 20px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; animation: paSpin .7s linear infinite; }
 @keyframes paSpin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   Desktop: two-pane studio layout (>= 900px). Mobile is untouched —
+   the left pane fills the device and the rail / deskbar stay hidden.
+   ============================================================ */
+.pa-pane-left { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.pa-deskbar { display: none; }
+.pa-rail { display: none; }
+
+@media (min-width: 900px) {
+  .pa-host { padding: 28px 18px; align-items: center; }
+
+  /* two-pane card for the funnel screens */
+  .pa-device.pa-two {
+    max-width: 1060px; width: 100%;
+    height: min(860px, calc(100dvh - 56px)); min-height: 0;
+    flex-direction: row; border-radius: 28px;
+  }
+  .pa-device.pa-two .pa-pane-left { width: 468px; flex: none; border-right: 1px solid var(--line); }
+  .pa-device.pa-two .pa-deskbar {
+    display: flex; align-items: center; gap: 2px; flex-shrink: 0;
+    padding: 16px 20px; border-bottom: 1px solid var(--line);
+    font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: -.02em;
+    color: var(--ink); background: var(--paper);
+  }
+
+  /* the preview rail */
+  .pa-device.pa-two .pa-rail {
+    display: flex; flex: 1; min-width: 0; overflow: auto;
+    align-items: center; justify-content: center; padding: 40px 36px;
+    background: radial-gradient(120% 90% at 50% 16%, #efece4, var(--paper-2));
+  }
+  .pa-rail-inner { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; }
+  .pa-rail-eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .pa-rail-stage { position: relative; width: 300px; max-width: 74%; }
+  .pa-rail-cap { text-align: center; }
+  .pa-rail-cap .l1 { font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--ink); }
+  .pa-rail-cap .l2 { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .pa-rail-cap .p { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--accent-ink); margin-top: 6px; }
+
+  /* hide elements that the rail now carries on desktop */
+  .pa-hide-desktop { display: none !important; }
+}
