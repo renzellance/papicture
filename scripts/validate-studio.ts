@@ -14,6 +14,12 @@ import path from 'path';
 import sharp from 'sharp';
 import { getProvider, isGenerative, fitTier, sharpProvider } from '../lib/studio';
 
+// This standalone script (unlike the Next app) does not auto-read .env files,
+// so load them here — keys can live in .env.local instead of the command line.
+for (const f of ['.env.local', '.env']) {
+  try { (process as any).loadEnvFile?.(f); } catch { /* file absent — ignore */ }
+}
+
 const MATRIX: { label: string; lookId: string; sub?: string; bgName?: string }[] = [
   { label: 'as-is',         lookId: 'original',    bgName: 'neutral gray' },
   { label: 'smartcasual',   lookId: 'smartcasual', sub: 'collared polo', bgName: 'white' },
