@@ -18,6 +18,8 @@ export function geminiProvider(): StudioProvider {
       if (!key) throw new Error('GEMINI_API_KEY is not set. Get one at https://aistudio.google.com/apikey');
 
       const prompt = buildPrompt({ lookId: req.lookId, sub: req.sub, bgName: req.bgName });
+      const generationConfig: any = { responseModalities: ['IMAGE'] };
+      if (req.aspectRatio) generationConfig.imageConfig = { aspectRatio: req.aspectRatio };
       const body = {
         contents: [{
           role: 'user',
@@ -26,7 +28,7 @@ export function geminiProvider(): StudioProvider {
             { text: prompt },
           ],
         }],
-        generationConfig: { responseModalities: ['IMAGE'] },
+        generationConfig,
       };
 
       const res = await fetch(`${ENDPOINT}/${model}:generateContent`, {

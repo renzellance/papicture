@@ -34,17 +34,21 @@ export async function POST(req: NextRequest) {
     const strict = fmt?.strict === 'strict';          // visa: never generative
     const providerName = process.env.STUDIO_PROVIDER || 'mock';
     const wantGenerative = isGenerative(lookId) && !strict && providerName !== 'mock' && providerName !== 'sharp';
+    // hint the model's output framing from the format (square IDs vs portrait)
+    const aspectRatio = fmt && fmt.ratio >= 0.95 ? '1:1' : '4:5';
 
     let outBuf: Buffer;
     let mode: string;
+    let detail: string | undefined;
 
     if (wantGenerative) {
       try {
-        const res = await getProvider(providerName).convert({ image: buf, mime: 'image/jpeg', lookId, sub, bgName, tier });
+        const res = await getProvider(providerName).convert({ image: buf, mime: 'image/jpeg', lookId, sub, bgName, aspectRatio, tier });
         outBuf = await fitTier(res.image, tier);
         mode = 'ai';
-      } catch (err) {
-        console.error('[generate] provider failed, falling back to cleanup', err);
+      } catch (err: any) {
+        detail = String(err?.message || err).slice(0, 300);
+        console.error('[generate] provider failed, falling back to cleanup:', detail);
         const res = await sharpProvider().convert({ image: buf, mime: 'image/jpeg', lookId, tier });
         outBuf = await fitTier(res.image, tier);
         mode = 'fallback';
@@ -52,10 +56,10 @@ export async function POST(req: NextRequest) {
     } else {
       const res = await sharpProvider().convert({ image: buf, mime: 'image/jpeg', lookId, tier });
       outBuf = await fitTier(res.image, tier);
-      mode = strict ? 'docsafe' : 'cleanup';
+      mode = strict ? 'docsafe' : (providerName === 'mock' || providerName === 'sharp' ? 'cleanup-noprovider' : 'cleanup');
     }
 
-    return NextResponse.json({ studio: `data:image/jpeg;base64,${outBuf.toString('base64')}`, mode });
+    return NextResponse.json({ studio: `data:image/jpeg;base64,${outBuf.toString('base64')}`, mode, detail });
   } catch (err) {
     console.error('[generate] failed', err);
     return NextResponse.json({ error: 'Could not process the photo.' }, { status: 500 });

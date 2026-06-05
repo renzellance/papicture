@@ -200,6 +200,8 @@ export function ProcessingScreen({ go, state, set }: ScreenProps) {
   const done = useRef(false);          // generation finished
   const reached = useRef(false);       // animation reached 100
   const studio = useRef<string | null>(null);
+  const mode = useRef<string | undefined>(undefined);
+  const detail = useRef<string | undefined>(undefined);
 
   // no photo? bail back to upload
   useEffect(() => {
@@ -219,8 +221,14 @@ export function ProcessingScreen({ go, state, set }: ScreenProps) {
         });
         const json = await res.json();
         studio.current = json.studio || state.original!;
-      } catch {
+        mode.current = json.mode;
+        detail.current = json.detail;
+        // eslint-disable-next-line no-console
+        console.log('[studio] processing generate:', json.mode, json.detail || '');
+      } catch (e) {
         studio.current = state.original!;   // graceful fallback: use the original
+        mode.current = 'error';
+        detail.current = String((e as any)?.message || e);
       }
       if (cancelled) return;
       done.current = true;
@@ -232,7 +240,8 @@ export function ProcessingScreen({ go, state, set }: ScreenProps) {
 
   const maybeAdvance = () => {
     if (done.current && reached.current) {
-      set({ studio: studio.current || state.original!, studioLook: 'original', studioSub: null });
+      set({ studio: studio.current || state.original!, studioLook: 'original', studioSub: null,
+            studioMode: mode.current, studioDetail: detail.current });
       setTimeout(() => go('preview'), 360);
     }
   };
@@ -301,6 +310,13 @@ export function PreviewScreen({ go, state }: ScreenProps) {
           <button className="pa-iconbtn" onClick={() => go('upload')} style={{ marginBottom: 14 }}><Icon name="arrowL" size={18} /></button>
           <h1 className="pa-h1">Your studio photo.</h1>
           <p className="pa-lead" style={{ marginTop: 8 }}>Drag the slider to compare it with your original.</p>
+          {(state.studioMode === 'fallback' || state.studioMode === 'cleanup-noprovider' || state.studioMode === 'error') && (
+            <div style={{ marginTop: 12 }}>
+              <Notice kind="warn" icon="warn">
+                Studio AI didn&rsquo;t run ({state.studioMode}){state.studioDetail ? `: ${state.studioDetail}` : ''}. Showing a basic cleanup instead.
+              </Notice>
+            </div>
+          )}
         </div>
 
         <div className="pa-hide-desktop" style={{ padding: '0 18px' }}>

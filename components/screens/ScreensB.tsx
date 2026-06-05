@@ -44,8 +44,16 @@ export function LookScreen({ go, state, set }: ScreenProps) {
         body: JSON.stringify({ image: state.original, lookId, sub: subVal, bgName: BG[state.bg || 'white']?.name, format: state.format, tier: 'preview' }),
       });
       const json = await res.json();
-      if (json.studio) set({ studio: json.studio, studioLook: lookId, studioSub: subVal || null });
-      else setGenErr('Could not update the preview. Try again.');
+      // eslint-disable-next-line no-console
+      console.log('[studio] look regenerate:', json.mode, json.detail || '');
+      if (json.studio) {
+        set({ studio: json.studio, studioLook: lookId, studioSub: subVal || null, studioMode: json.mode, studioDetail: json.detail });
+        if (json.mode === 'fallback' || json.mode === 'cleanup-noprovider') {
+          setGenErr(`Studio AI didn't run (${json.mode})${json.detail ? ': ' + json.detail : ''}.`);
+        }
+      } else {
+        setGenErr('Could not update the preview. Try again.');
+      }
     } catch {
       setGenErr('Could not update the preview. Try again.');
     } finally {
