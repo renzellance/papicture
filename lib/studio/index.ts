@@ -3,6 +3,7 @@
 
 import type { StudioProvider } from './types';
 import { geminiProvider } from './gemini';
+import { falProvider } from './fal';
 import { sharpProvider } from './sharpFallback';
 
 export * from './types';
@@ -13,6 +14,8 @@ export function getProvider(name = process.env.STUDIO_PROVIDER || 'mock'): Studi
   switch (name) {
     case 'gemini':
       return geminiProvider();
+    case 'fal':
+      return falProvider();
     case 'mock':
     case 'sharp':
       return sharpProvider();
