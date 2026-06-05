@@ -6,9 +6,22 @@
 
 import type { StudioProvider, StudioRequest, StudioOutput } from './types';
 import { buildPrompt } from './prompts';
-import { fetchWithRetry } from './http';
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** POST with retry on transient 429/503 (this image model 429s sporadically
+ *  even on paid tiers). Backoff stays within the route's maxDuration. */
+async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Promise<Response> {
+  let res: Response | null = null;
+  for (let i = 0; i < attempts; i++) {
+    res = await fetch(url, init);
+    if (res.status !== 429 && res.status !== 503) return res;
+    if (i < attempts - 1) await sleep(800 * Math.pow(2, i)); // 0.8s, 1.6s
+  }
+  return res!;
+}
 
 export function geminiProvider(): StudioProvider {
   const model = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image';

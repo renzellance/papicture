@@ -118,13 +118,10 @@ Pipelines split by look:
 
 Provider abstraction in `lib/studio/` (`getProvider()` by `STUDIO_PROVIDER`):
 - `mock` — zero-key sharp cleanup (default, no real transform).
-- `gemini` — Gemini 2.5 Flash Image ("nano banana") via Google. Best single-image
-  identity, ~$0.039/img. **Image output now needs BILLING enabled** (the free tier
-  is effectively 0 and 429s). Paid tier doesn't train on inputs; request ZDR.
-- `fal` — fal.ai, runs the same nano-banana model (or Flux Kontext / Qwen-Edit via
-  `FAL_MODEL`). **~$20 free signup credit (~500 imgs)** — the free-to-start path.
-Shared `http.ts` retries transient 429/503. Final tier later: Nano Banana Pro +
-upscale/face-restore, payment-gated server-side.
+- `gemini` — Gemini 2.5 Flash Image ("nano banana"). Best single-image identity,
+  ~$0.039/img (free 500/day for testing). **Free tier may train on inputs — use a
+  PAID key + Zero Data Retention for real user selfies.** Final tier later: Nano
+  Banana Pro + upscale/face-restore, payment-gated server-side.
 
 **Wired into the app:** `/api/generate` uses `lib/studio`. Processing generates the
 base **As is** studio photo; `LookScreen` regenerates on look/attire change (and a
