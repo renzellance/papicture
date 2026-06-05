@@ -23,12 +23,12 @@ export function sharpProvider(): StudioProvider {
   };
 }
 
-/** Resize + encode for a tier: preview is small (paywall), final is large. */
+/** Resize + encode for a tier: preview is shown pre-pay, final is post-pay. */
 export async function fitTier(buf: Buffer, tier: Tier): Promise<Buffer> {
-  const max = tier === 'preview' ? 768 : 1600;
+  const max = tier === 'preview' ? 1024 : 1600;
   return sharp(buf)
     .rotate()
     .resize({ width: max, height: max, fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: tier === 'preview' ? 82 : 94 })
+    .jpeg({ quality: tier === 'preview' ? 86 : 94 })
     .toBuffer();
 }

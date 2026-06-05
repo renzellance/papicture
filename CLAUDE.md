@@ -123,17 +123,21 @@ Provider abstraction in `lib/studio/` (`getProvider()` by `STUDIO_PROVIDER`):
   PAID key + Zero Data Retention for real user selfies.** Final tier later: Nano
   Banana Pro + upscale/face-restore, payment-gated server-side.
 
-Two tiers: **preview** (low-res + watermark, pre-pay, regeneratable) and **final**
-(max quality, post-pay). Generation runs **after look-select** (not at processing),
-with a Regenerate action. Validate before integrating:
-`STUDIO_PROVIDER=gemini GEMINI_API_KEY=… npm run validate:studio -- selfie.jpg`
-(outputs to `validation-output/`, gitignored). Harness is `scripts/validate-studio.ts`
-— NOT wired into the live funnel yet.
+**Wired into the app:** `/api/generate` uses `lib/studio`. Processing generates the
+base **As is** studio photo; `LookScreen` regenerates on look/attire change (and a
+Regenerate button), updating `order.studio` (tracked by `studioLook`/`studioSub`).
+Visa/strict formats force the non-generative path. On Vercel, set `STUDIO_PROVIDER=gemini`
++ `GEMINI_API_KEY`; with no key it stays on `mock` (sharp cleanup). Keep `lib/studio`
+**server-only** (it imports `sharp`) — never import it into client components.
+
+Tiers: currently a single ~1024px **preview** is used for display + download. Next:
+a post-pay **final** tier (Nano Banana Pro + upscale/face-restore) generated and
+returned **only after payment is verified** server-side (so the clean full-res isn't
+client-side pre-payment); plus burned-in preview watermark.
 
 ## Stubbed / next layers
 
-- **AI attire-swap** — wire `lib/studio` into `/api/generate` (preview/final
-  tiers) once nano-banana output is validated. Seam also flagged `USE_AI_STUDIO`.
+- **Final tier + payment gating** — high-res post-pay gen, server-gated on paid.
 - **Email delivery** — confirmation promises an emailed file; download works
   client-side. Wire Resend/Postmark to actually send.
 - **Server-side orders + PayRex webhook + Manager UI** (dashboard, orders,

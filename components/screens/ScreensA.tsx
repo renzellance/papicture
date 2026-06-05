@@ -215,7 +215,7 @@ export function ProcessingScreen({ go, state, set }: ScreenProps) {
         const res = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: state.original, look: state.look || null }),
+          body: JSON.stringify({ image: state.original, lookId: 'original', tier: 'preview' }),
         });
         const json = await res.json();
         studio.current = json.studio || state.original!;
@@ -232,7 +232,7 @@ export function ProcessingScreen({ go, state, set }: ScreenProps) {
 
   const maybeAdvance = () => {
     if (done.current && reached.current) {
-      set({ studio: studio.current || state.original! });
+      set({ studio: studio.current || state.original!, studioLook: 'original', studioSub: null });
       setTimeout(() => go('preview'), 360);
     }
   };

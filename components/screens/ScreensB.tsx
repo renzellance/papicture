@@ -1,7 +1,7 @@
 'use client';
 /* papicture — Screens B: choose look, choose format */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon, Portrait, Watermark, FrameMarks, Btn, Swatches, Seg, Notice, StepBar } from '@/components/ui';
 import { LOOKS, FORMATS, BG, GROUPS, PRICE } from '@/lib/data';
 import type { Format } from '@/lib/types';
@@ -29,11 +29,47 @@ export function LookScreen({ go, state, set }: ScreenProps) {
   const docOnly = looks.length === 1 && looks[0].id === 'docsafe';
   const [sel, setSel] = useState<string | null>(state.look && allowed.includes(state.look) ? state.look : (docOnly ? 'docsafe' : null));
   const [sub, setSub] = useState<Record<string, string>>(state.look && state.lookSub ? { [state.look]: state.lookSub } : {});
+  const [regen, setRegen] = useState(false);
+  const [genErr, setGenErr] = useState<string | null>(null);
+
+  // regenerate the studio preview to reflect the chosen look/attire
+  const runGen = async (lookId: string, subVal: string | null, force = false) => {
+    if (!state.original || regen) return;
+    if (!force && lookId === state.studioLook && (subVal || null) === (state.studioSub ?? null)) return; // already current
+    setRegen(true); setGenErr(null);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: state.original, lookId, sub: subVal, bgName: BG[state.bg || 'white']?.name, format: state.format, tier: 'preview' }),
+      });
+      const json = await res.json();
+      if (json.studio) set({ studio: json.studio, studioLook: lookId, studioSub: subVal || null });
+      else setGenErr('Could not update the preview. Try again.');
+    } catch {
+      setGenErr('Could not update the preview. Try again.');
+    } finally {
+      setRegen(false);
+    }
+  };
+
+  // on entering, make the preview match the selected look (e.g. visa -> doc-safe)
+  useEffect(() => {
+    if (sel && sel !== state.studioLook) runGen(sel, sub[sel] || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const choose = (id: string) => {
+    if (regen) return;
     setSel(id);
     const look = LOOKS.find((l) => l.id === id)!;
+    const subVal = look.sub ? (sub[id] || look.sub.options[0]) : null;
     if (look.sub && !sub[id]) setSub((s) => ({ ...s, [id]: look.sub!.options[0] }));
+    runGen(id, subVal);
+  };
+  const chooseSub = (id: string, opt: string) => {
+    setSub((s) => ({ ...s, [id]: opt }));
+    runGen(id, opt);
   };
   const cont = () => {
     set({ look: sel!, lookSub: sub[sel!] || null });
@@ -83,7 +119,7 @@ export function LookScreen({ go, state, set }: ScreenProps) {
                           <div className="pa-small" style={{ fontWeight: 700, color: 'var(--ink-2)', marginBottom: 8 }}>{lk.sub.label}</div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                             {lk.sub.options.map((opt) => (
-                              <button key={opt} onClick={() => setSub((s) => ({ ...s, [lk.id]: opt }))}
+                              <button key={opt} onClick={() => chooseSub(lk.id, opt)}
                                       className="pa-chip" style={{
                                         cursor: 'pointer', textTransform: 'none', letterSpacing: 0, fontSize: 12, fontWeight: 600,
                                         fontFamily: 'var(--font-body)', padding: '8px 12px',
@@ -111,9 +147,25 @@ export function LookScreen({ go, state, set }: ScreenProps) {
       </div>
 
       <div className="pa-dock pa-dock-solid">
-        <Btn variant="primary" iconR="arrowR" disabled={!sel} onClick={cont}>
-          {sel ? 'Continue to checkout' : 'Select a look'}
-        </Btn>
+        {(regen || genErr) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, justifyContent: 'center' }}>
+            {regen && <span className="pa-spin" style={{ borderColor: 'var(--line)', borderTopColor: 'var(--accent)' }} />}
+            <span className="pa-small">{regen ? 'Updating your preview…' : genErr}</span>
+          </div>
+        )}
+        <div className="pa-dock-row">
+          {sel && (
+            <button className="pa-iconbtn" aria-label="Regenerate" disabled={regen}
+                    onClick={() => runGen(sel, sub[sel] || null, true)} title="Regenerate">
+              <Icon name="refresh" size={18} />
+            </button>
+          )}
+          <div style={{ flex: 1 }}>
+            <Btn variant="primary" iconR="arrowR" disabled={!sel || regen} onClick={cont}>
+              {sel ? 'Continue to checkout' : 'Select a look'}
+            </Btn>
+          </div>
+        </div>
       </div>
     </>
   );
