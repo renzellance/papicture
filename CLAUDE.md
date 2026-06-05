@@ -106,9 +106,34 @@ lib/types.ts            Order + catalog types
 - Mobile-first; the device frame is `.pa-device` (phone column on mobile,
   two-pane card on desktop for funnel screens).
 
+## Studio AI (the moat) — selfie → studio portrait
+
+The core magic is a **generative** transformation of an ordinary selfie (any bg,
+phone lighting) into a real studio portrait: relight + clean backdrop + optional
+attire, **identity locked** (change attire/light/bg only, never the face).
+Pipelines split by look:
+- **As is / smart casual / formal / studio / linkedin** → generative (the magic).
+- **Document-safe / visa** → NEVER generative (legal/truthful): crop/resize/bg/
+  exposure only. See `isGenerative()` in `lib/studio/prompts.ts`.
+
+Provider abstraction in `lib/studio/` (`getProvider()` by `STUDIO_PROVIDER`):
+- `mock` — zero-key sharp cleanup (default, no real transform).
+- `gemini` — Gemini 2.5 Flash Image ("nano banana"). Best single-image identity,
+  ~$0.039/img (free 500/day for testing). **Free tier may train on inputs — use a
+  PAID key + Zero Data Retention for real user selfies.** Final tier later: Nano
+  Banana Pro + upscale/face-restore, payment-gated server-side.
+
+Two tiers: **preview** (low-res + watermark, pre-pay, regeneratable) and **final**
+(max quality, post-pay). Generation runs **after look-select** (not at processing),
+with a Regenerate action. Validate before integrating:
+`STUDIO_PROVIDER=gemini GEMINI_API_KEY=… npm run validate:studio -- selfie.jpg`
+(outputs to `validation-output/`, gitignored). Harness is `scripts/validate-studio.ts`
+— NOT wired into the live funnel yet.
+
 ## Stubbed / next layers
 
-- **AI attire-swap** — the moat; seam at `USE_AI_STUDIO` in `app/api/generate`.
+- **AI attire-swap** — wire `lib/studio` into `/api/generate` (preview/final
+  tiers) once nano-banana output is validated. Seam also flagged `USE_AI_STUDIO`.
 - **Email delivery** — confirmation promises an emailed file; download works
   client-side. Wire Resend/Postmark to actually send.
 - **Server-side orders + PayRex webhook + Manager UI** (dashboard, orders,
