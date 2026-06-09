@@ -15,7 +15,7 @@ export interface Look {
 
 export interface Format {
   group: string;
-  groupCode: 'A' | 'B' | 'C';
+  groupCode: 'A' | 'B' | 'C' | 'D';
   id: string;
   name: string;
   short?: string;
@@ -36,6 +36,8 @@ export interface Format {
   darkTop?: boolean;
   printSet?: string;
   printPrice?: number;
+  /** combo savings vs buying each size as a separate set (PHP) */
+  save?: number;
   digitalSpec?: string;
   rules?: string[];
   warn?: string;
@@ -45,7 +47,7 @@ export interface Format {
 
 export interface Swatch { id: string; name: string; hex: string; ring: string }
 
-export interface Group { code: 'A' | 'B' | 'C'; name: string; note: string; noteDigital: string }
+export interface Group { code: 'A' | 'B' | 'C' | 'D'; name: string; note: string; noteDigital: string }
 
 /** the order being assembled across the funnel */
 export interface Order {

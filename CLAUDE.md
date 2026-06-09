@@ -7,7 +7,7 @@ current when decisions change.
 
 **papicture** — a mobile-first web app: one selfie → every submission-ready
 photo a Filipino needs (IDs, visas, work/profile headshots). Sold as a **digital
-file** (₱149) or a **printed set delivered nationwide** (from ₱249).
+file** (₱149) or a **printed set delivered nationwide** (from ₱199).
 
 Origin: a Claude Design HTML/CSS prototype, reimplemented as a real Next.js app.
 The original design bundle (chats + prototype) is the source of intent — its copy

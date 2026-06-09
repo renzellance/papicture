@@ -227,7 +227,7 @@ export function FormatScreen({ go, state, set }: ScreenProps) {
                           <div style={{ position: 'absolute', inset: 0 }}><Watermark text="papicture" /></div>
                           <FrameMarks />
                         </div>
-                        {f.combo && <div style={{ marginTop: 10 }}><span className="pa-chip pa-chip-accent" style={{ padding: '3px 7px' }}>Save ₱149</span></div>}
+                        {f.combo && f.save && <div style={{ marginTop: 10 }}><span className="pa-chip pa-chip-accent" style={{ padding: '3px 7px' }}>Save {PRICE.currency}{f.save}</span></div>}
                         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14.5, marginTop: f.combo ? 6 : 10, lineHeight: 1.15 }}>{title}</div>
                         <div className="pa-small" style={{ marginTop: 3 }}>{spec}</div>
                         <div className="pa-ref" style={{ color: 'var(--accent-ink)', marginTop: 9 }}>{price} {isPrint ? 'set' : 'file'}</div>
@@ -290,7 +290,7 @@ function FormatSheet({ fmt, state, set, go, onClose }:
               <h2 className="pa-h2" style={{ fontSize: 21 }}>{heading}</h2>
               <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 8 }}>
                 <span className="pa-chip"><Icon name={isPrint ? 'print' : 'mail'} size={11} />{isPrint ? 'Printed set' : 'Digital file'}</span>
-                {isPrint && fmt.combo && <span className="pa-chip pa-chip-accent">Save ₱149</span>}
+                {isPrint && fmt.combo && fmt.save && <span className="pa-chip pa-chip-accent">Save {PRICE.currency}{fmt.save}</span>}
               </div>
               <div className="pa-sumrow" style={{ paddingTop: 12 }}><span className="k">{isPrint ? 'Includes' : 'You get'}</span><span className="v">{includes}</span></div>
               <div className="pa-sumrow"><span className="k">Best for</span><span className="v" style={{ maxWidth: 150 }}>{fmt.best}</span></div>
