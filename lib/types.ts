@@ -15,7 +15,7 @@ export interface Look {
 
 export interface Format {
   group: string;
-  groupCode: 'A' | 'B' | 'C' | 'D';
+  groupCode: 'A' | 'B' | 'C';
   id: string;
   name: string;
   short?: string;
@@ -47,7 +47,7 @@ export interface Format {
 
 export interface Swatch { id: string; name: string; hex: string; ring: string }
 
-export interface Group { code: 'A' | 'B' | 'C' | 'D'; name: string; note: string; noteDigital: string }
+export interface Group { code: 'A' | 'B' | 'C'; name: string; note: string; noteDigital: string }
 
 /** the order being assembled across the funnel */
 export interface Order {

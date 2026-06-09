@@ -266,27 +266,13 @@ export const FORMATS: Format[] = [
     digital: true, print: true, printSet: '6 copies', printPrice: 249,
     digitalSpec: '45×35 mm · 600×750 px JPG', px: [600, 750],
     rules: ['Plain white background', 'Front-facing', 'Neutral expression', 'No retouching'],
-    warn: 'Philippine ePassport photos are taken at the DFA appointment. Use this for forms that ask for a passport-size photo, not the DFA appointment itself.' },
-
-  // ---------- Group D — PRC & Civil Service ----------
-  { group: 'PRC & Civil Service', groupCode: 'D',
-    id: 'prc-id', name: 'PRC / Civil Service ID', short: 'PRC / Civil Service', code: 'ID-PRC',
-    size: '6 pcs passport size', unit: '35 × 45 mm', ratio: 0.778,
-    backgrounds: ['white','offwhite'], defaultBg: 'white',
-    strict: 'standard', looks: ['docsafe','smartcasual','formal'],
-    best: 'PRC ID, Civil Service eligibility and license renewals',
-    digital: true, print: true,
-    printSet: '6 pcs passport size, name tag included', printPrice: 249,
-    digitalSpec: '35×45 mm · 600×750 px JPG', px: [600, 750],
-    rules: ['Plain white background', 'Front-facing', 'Collared / formal top', 'Neutral expression'],
-    warn: 'PRC and Civil Service IDs usually need a name tag printed on the photo. For printed sets, add your full name in the order notes and we will include it. Check your office’s latest format before submitting.' },
+    warn: "Philippine ePassport photos are taken at the DFA appointment. Use this for forms that ask for a passport-size photo, not the DFA appointment itself." },
 ];
 
 export const GROUPS: Group[] = [
   { code: 'A', name: 'ID photo sets', note: 'Printed sets, cut and delivered', noteDigital: 'One file per size, ready to upload or print' },
   { code: 'B', name: 'Profile & résumé', note: 'Headshots for your digital life', noteDigital: 'Headshots for your digital life' },
-  { code: 'C', name: 'Visa & Passport', note: 'Sized to each country’s official spec', noteDigital: 'Sized to each country’s official spec' },
-  { code: 'D', name: 'PRC & Civil Service', note: 'Printed sets for PH professional IDs', noteDigital: 'Sized for PH professional ID requirements' },
+  { code: 'C', name: 'Visa & Passport', note: "Sized to each country's official spec", noteDigital: "Sized to each country's official spec" },
 ];
 
 // pricing (PHP) — digital is a single studio-edited file; print prices live per package
