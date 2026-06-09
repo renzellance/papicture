@@ -53,6 +53,12 @@ export interface Order {
   original?: string;
   /** studio-generated result from /api/generate (data URL) — the "after" */
   studio?: string;
+  /** which look/attire the current `studio` image reflects (to avoid redundant regen) */
+  studioLook?: string;
+  studioSub?: string | null;
+  /** diagnostics: which path produced `studio` (ai | fallback | cleanup | docsafe …) */
+  studioMode?: string;
+  studioDetail?: string;
   source?: 'camera' | 'upload';
   fulfillment?: Fulfillment;
   format?: string;

@@ -64,6 +64,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: #d9d4ca; overscrol
 .pa-device {
   width: 100%;
   max-width: 440px;
+  height: 100dvh;
   min-height: 100dvh;
   background: var(--paper);
   position: relative;
@@ -95,6 +96,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: #d9d4ca; overscrol
 /* scroll region per screen */
 .pa-scroll {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -481,6 +483,113 @@ html, body { margin: 0; padding: 0; height: 100%; background: #d9d4ca; overscrol
 .pa-pays { display: flex; flex-wrap: wrap; gap: 7px; }
 .pa-pay { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); background: #fff; border: 1px solid var(--line); padding: 6px 9px; border-radius: 7px; }
 
-/* spinner (mock pay) */
+/* spinner (mock pay / camera) */
 .pa-spin { width: 20px; height: 20px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; animation: paSpin .7s linear infinite; }
 @keyframes paSpin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   Site chrome (brand + nav). Shown as desktop page chrome outside the focus
+   card, and on the legal pages. Hidden on mobile inside the app shell.
+   ============================================================ */
+.pa-brand {
+  font-family: var(--font-display); font-weight: 700; font-size: 19px; letter-spacing: -.02em;
+  color: var(--ink); background: none; border: none; padding: 0; cursor: pointer; text-decoration: none;
+}
+.pa-brand span { color: var(--accent); }
+.pa-navlink {
+  font-family: var(--font-body); font-weight: 600; font-size: 13.5px; color: var(--ink-2);
+  background: none; border: none; padding: 4px 2px; cursor: pointer; text-decoration: none;
+  transition: color .15s ease;
+}
+.pa-navlink:hover { color: var(--accent-ink); }
+.pa-site-top, .pa-site-foot { width: 100%; max-width: 1040px; }
+.pa-site-top { display: flex; align-items: center; justify-content: space-between; padding: 2px 8px; }
+.pa-site-nav { display: flex; align-items: center; gap: 22px; }
+.pa-site-foot { display: flex; flex-direction: column; gap: 8px; padding: 2px 8px; }
+.pa-foot-links { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.pa-foot-cp { font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-left: auto; }
+.pa-foot-disc { font-size: 11.5px; line-height: 1.45; color: var(--muted); max-width: 680px; margin: 0; }
+
+/* in the app shell, page chrome is desktop-only */
+.pa-host > .pa-site-top, .pa-host > .pa-site-foot { display: none; }
+
+/* ---- mobile landing chrome (hidden on desktop) ---- */
+.pa-mtop { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px 6px; }
+.pa-menu-btn {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-2); background: #fff; border: 1px solid var(--line); border-radius: var(--pill);
+  padding: 7px 14px; cursor: pointer;
+}
+.pa-menu-scrim { position: fixed; inset: 0; z-index: 40; }
+.pa-menu-sheet {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 41;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-sm);
+  box-shadow: var(--shadow-lg); display: flex; flex-direction: column; min-width: 168px; overflow: hidden;
+}
+.pa-menu-item {
+  text-align: left; padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--ink-2);
+  background: #fff; border: none; border-bottom: 1px solid var(--line-2); cursor: pointer; text-decoration: none; display: block;
+}
+.pa-menu-item:last-child { border-bottom: none; }
+.pa-mfoot {
+  margin-top: 8px; padding: 24px 18px calc(28px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px;
+}
+.pa-mfoot-links { display: flex; flex-wrap: wrap; gap: 14px 18px; }
+
+/* ============================================================
+   Desktop: one consistent focus card (>= 900px) for every screen, framed by
+   the page chrome above. Mobile is untouched (chrome hidden, card full-bleed).
+   ============================================================ */
+.pa-pane-left { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.pa-rail { display: none; }
+
+@media (min-width: 900px) {
+  .pa-host { flex-direction: column; justify-content: space-between; align-items: center; padding: 18px; gap: 12px; }
+  .pa-host > .pa-site-top, .pa-host > .pa-site-foot { display: flex; }
+  .pa-mtop, .pa-mfoot { display: none; }
+
+  /* the focus card — same size on every screen */
+  .pa-device {
+    max-width: 1040px; width: 100%;
+    height: min(816px, calc(100dvh - 172px)); min-height: 0;
+    border-radius: 28px; flex-direction: column;
+  }
+  /* screens with a right pane */
+  .pa-device.pa-split { flex-direction: row; }
+  .pa-device.pa-split .pa-pane-left { width: 460px; flex: none; border-right: 1px solid var(--line); }
+  .pa-device.pa-split .pa-rail {
+    display: flex; flex: 1; min-width: 0; overflow: auto;
+    align-items: center; justify-content: center; padding: 40px 36px;
+    background: radial-gradient(120% 90% at 50% 16%, #efece4, var(--paper-2));
+  }
+  .pa-rail-inner { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; }
+  .pa-rail-eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .pa-rail-stage { position: relative; width: 300px; max-width: 74%; }
+  .pa-rail-cap { text-align: center; }
+  .pa-rail-cap .l1 { font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--ink); }
+  .pa-rail-cap .l2 { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .pa-rail-cap .p { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--accent-ink); margin-top: 6px; }
+
+  /* hide elements that the rail now carries on desktop */
+  .pa-hide-desktop { display: none !important; }
+}
+
+/* ============================================================
+   Legal / document pages (privacy, terms). Chrome always visible.
+   ============================================================ */
+.pa-host-doc {
+  min-height: 100dvh; display: flex; flex-direction: column; align-items: center;
+  background: #d9d4ca; padding: 18px; gap: 14px;
+}
+.pa-host-doc > .pa-site-top, .pa-host-doc > .pa-site-foot { max-width: 760px; }
+.pa-doc {
+  width: 100%; max-width: 760px; background: var(--paper);
+  border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  padding: 32px 26px; color: var(--ink);
+}
+.pa-doc-link {
+  font-family: var(--font-body); font-weight: 700; font-size: 14px;
+  color: var(--accent-ink); text-decoration: none;
+}
+.pa-doc-link:hover { text-decoration: underline; }

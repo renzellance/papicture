@@ -1,55 +1,65 @@
 /* papicture — studio photo generation.
  *
- * THIS IS THE AI SEAM. Today it does honest, real work: it takes the uploaded
- * selfie and produces a cleaned "studio" version (auto-orient, even exposure,
- * gentle colour + sharpness lift) with sharp. It does NOT fabricate attire or
- * reshape the face — that keeps document-safe / visa looks truthful.
+ * The selfie -> studio portrait transformation (the moat). Uses lib/studio:
+ *   - generative looks (As is / smart casual / formal / studio / linkedin) go to
+ *     the configured provider (e.g. nano banana) — identity-locked relight +
+ *     attire + clean backdrop.
+ *   - document-safe / visa formats are NEVER generative: honest sharp cleanup
+ *     only (crop/resize/bg/exposure), so visa photos stay truthful.
+ * Falls back to sharp cleanup if the provider errors, so the funnel never breaks.
  *
- * To make the attire/background swap real later, set USE_AI_STUDIO=1 and call
- * an image model where marked below (input: the buffer + `look`; output: a PNG
- * buffer). The rest of the funnel already layouts the result on top per format.
+ * Provider + key via env: STUDIO_PROVIDER (mock | gemini), GEMINI_API_KEY.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import sharp from 'sharp';
+import { getProvider, isGenerative, fitTier, sharpProvider } from '@/lib/studio';
+import { FORMATS } from '@/lib/data';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 function dataUrlToBuffer(dataUrl: string): Buffer {
   const comma = dataUrl.indexOf(',');
-  const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
-  return Buffer.from(b64, 'base64');
+  return Buffer.from(comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl, 'base64');
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { image, look } = await req.json();
+    const { image, lookId = 'original', sub = null, bgName, format, tier = 'preview' } = await req.json();
     if (!image || typeof image !== 'string') {
       return NextResponse.json({ error: 'No image provided.' }, { status: 400 });
     }
 
-    const input = dataUrlToBuffer(image);
+    const buf = dataUrlToBuffer(image);
+    const fmt = format ? FORMATS.find((f) => f.id === format) : null;
+    const strict = fmt?.strict === 'strict';          // visa: never generative
+    const providerName = process.env.STUDIO_PROVIDER || 'mock';
+    const wantGenerative = isGenerative(lookId) && !strict && providerName !== 'mock' && providerName !== 'sharp';
+    // hint the model's output framing from the format (square IDs vs portrait)
+    const aspectRatio = fmt && fmt.ratio >= 0.95 ? '1:1' : '4:5';
 
-    // --- AI seam ---------------------------------------------------------
-    // if (process.env.USE_AI_STUDIO === '1' && look && look !== 'docsafe' && look !== 'original') {
-    //   const out = await callImageModel(input, look); // returns Buffer
-    //   return NextResponse.json({ studio: `data:image/jpeg;base64,${out.toString('base64')}` });
-    // }
-    // ---------------------------------------------------------------------
+    let outBuf: Buffer;
+    let mode: string;
+    let detail: string | undefined;
 
-    // Honest studio cleanup: orient, even out exposure, gentle lift + sharpen.
-    const docSafe = look === 'docsafe' || look === 'original';
-    let pipe = sharp(input).rotate().normalize();
-    if (!docSafe) {
-      // a touch more polish for the non-document looks
-      pipe = pipe.modulate({ brightness: 1.04, saturation: 1.07 });
+    if (wantGenerative) {
+      try {
+        const res = await getProvider(providerName).convert({ image: buf, mime: 'image/jpeg', lookId, sub, bgName, aspectRatio, tier });
+        outBuf = await fitTier(res.image, tier);
+        mode = 'ai';
+      } catch (err: any) {
+        detail = String(err?.message || err).slice(0, 300);
+        console.error('[generate] provider failed, falling back to cleanup:', detail);
+        const res = await sharpProvider().convert({ image: buf, mime: 'image/jpeg', lookId, tier });
+        outBuf = await fitTier(res.image, tier);
+        mode = 'fallback';
+      }
+    } else {
+      const res = await sharpProvider().convert({ image: buf, mime: 'image/jpeg', lookId, tier });
+      outBuf = await fitTier(res.image, tier);
+      mode = strict ? 'docsafe' : (providerName === 'mock' || providerName === 'sharp' ? 'cleanup-noprovider' : 'cleanup');
     }
-    const out = await pipe.sharpen({ sigma: 0.6 }).jpeg({ quality: 90 }).toBuffer();
 
-    return NextResponse.json({
-      studio: `data:image/jpeg;base64,${out.toString('base64')}`,
-      mode: process.env.USE_AI_STUDIO === '1' ? 'ai' : 'cleanup',
-    });
+    return NextResponse.json({ studio: `data:image/jpeg;base64,${outBuf.toString('base64')}`, mode, detail });
   } catch (err) {
     console.error('[generate] failed', err);
     return NextResponse.json({ error: 'Could not process the photo.' }, { status: 500 });

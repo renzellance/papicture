@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Icon, Portrait, Watermark, FrameMarks, Btn, Notice } from '@/components/ui';
 import { LOOKS, FORMATS, BG, PRICE } from '@/lib/data';
 import { saveOrder } from '@/lib/storage';
-import { renderFinal, downloadDataURL } from '@/lib/image';
+import { downloadFinalPhoto } from '@/lib/order';
 import type { Order } from '@/lib/types';
 import type { ScreenProps } from './types';
 import { FunnelHeader } from './ScreensB';
@@ -240,7 +240,6 @@ export function ConfirmationScreen({ state, reset }: ScreenProps) {
   const isPrint = state.fulfillment === 'print';
   const firstName = (state.name || '').trim().split(' ')[0];
   const [dl, setDl] = useState(false);
-  const fmt = FORMATS.find((f) => f.id === state.format);
 
   const rows: [string, string | undefined][] = [
     ['Order', state.orderNo],
@@ -255,11 +254,7 @@ export function ConfirmationScreen({ state, reset }: ScreenProps) {
   const download = async () => {
     if (!state.studio || dl) return;
     setDl(true);
-    try {
-      const [w, h] = fmt?.px || [1080, 1080];
-      const out = await renderFinal({ src: state.studio, width: w, height: h, bg: BG[state.bg || 'white']?.hex || '#fff', circle: state.circle });
-      downloadDataURL(out, `${state.orderNo || 'papicture'}.jpg`);
-    } finally { setDl(false); }
+    try { await downloadFinalPhoto(state); } finally { setDl(false); }
   };
 
   return (
@@ -280,7 +275,7 @@ export function ConfirmationScreen({ state, reset }: ScreenProps) {
 
         <div className="pa-pad" style={{ paddingTop: 20 }}>
           {state.studio && (
-            <div style={{ display: 'flex', gap: 14, alignItems: 'center', padding: 14, marginBottom: 12 }} className="pa-card">
+            <div style={{ display: 'flex', gap: 14, alignItems: 'center', padding: 14, marginBottom: 12 }} className="pa-card pa-hide-desktop">
               <OrderThumb state={state} size={64} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="pa-h3">Your photo is ready</div>
