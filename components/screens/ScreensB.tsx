@@ -49,7 +49,7 @@ export function LookScreen({ go, state, set }: ScreenProps) {
       if (json.studio) {
         set({ studio: json.studio, studioLook: lookId, studioSub: subVal || null, studioMode: json.mode, studioDetail: json.detail });
         if (json.mode === 'fallback' || json.mode === 'cleanup-noprovider') {
-          setGenErr(`Studio AI didn't run (${json.mode})${json.detail ? ': ' + json.detail : ''}.`);
+          setGenErr('The studio look didn’t fully apply. Tap regenerate to try again.');
         }
       } else {
         setGenErr('Could not update the preview. Try again.');
@@ -98,7 +98,9 @@ export function LookScreen({ go, state, set }: ScreenProps) {
             {looks.map((lk) => {
               const on = sel === lk.id;
               return (
-                <div key={lk.id} className="pa-tile" data-sel={on} onClick={() => choose(lk.id)} style={{ overflow: 'hidden' }}>
+                <div key={lk.id} className="pa-tile" data-sel={on} onClick={() => choose(lk.id)} role="button" tabIndex={0}
+                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(lk.id); } }}
+                     style={{ overflow: 'hidden' }}>
                   <div style={{ display: 'flex', gap: 14, padding: 14 }}>
                     <div style={{ width: 76, flexShrink: 0, borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
                       <Portrait variant={lk.id === 'original' ? 'raw' : 'studio'}

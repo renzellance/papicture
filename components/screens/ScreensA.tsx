@@ -9,6 +9,41 @@ import { PRICE } from '@/lib/data';
 import { downscaleImage } from '@/lib/image';
 import type { ScreenProps } from './types';
 
+const FAQ: [string, string][] = [
+  ['Will my photo be accepted?',
+   'We size every format to the requesting office’s published spec. Acceptance is decided by that office, so check their latest requirements before you submit.'],
+  ['Do you edit my face?',
+   'No. Visa and document formats get crop, resize and background only. Other looks change attire, lighting and background, never your face.'],
+  ['How fast do I get my photos?',
+   'Digital files are ready to download right after payment. Printed sets arrive in 2–4 days in Metro Manila and 5–7 days in the provinces, delivery included.'],
+  ['What photo works best?',
+   'A clear selfie facing the camera in good light, shoulders visible. No screenshots and no heavy filters.'],
+  ['What if something is wrong with my order?',
+   'If a file is unusable because of an error on our side, email hello@papicture.com and we will reprocess or refund it.'],
+];
+
+function FaqList() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {FAQ.map(([q, a], i) => {
+        const on = open === i;
+        return (
+          <div key={q} style={{ borderTop: i === 0 ? '1px solid var(--ink)' : '1px solid var(--line)' }}>
+            <button onClick={() => setOpen(on ? null : i)} aria-expanded={on}
+                    style={{ appearance: 'none', background: 'none', border: 'none', cursor: 'pointer', width: '100%',
+                             display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', textAlign: 'left' }}>
+              <span className="pa-h3" style={{ flex: 1, fontSize: 15.5 }}>{q}</span>
+              <Icon name={on ? 'x' : 'plus'} size={16} sw={2.2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+            </button>
+            {on && <p className="pa-body" style={{ padding: '0 0 16px', color: 'var(--ink-2)' }}>{a}</p>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ============================== LANDING ============================== */
 export function LandingScreen({ go }: ScreenProps) {
   const sheet = [
@@ -63,7 +98,15 @@ export function LandingScreen({ go }: ScreenProps) {
         </div>
 
         <div className="pa-pad" style={{ paddingTop: 24 }}>
-          <p id="how-it-works" className="pa-eyebrow" style={{ scrollMarginTop: 16 }}>How it works</p>
+          <p className="pa-eyebrow">The studio look</p>
+          <div style={{ borderRadius: 'var(--r)', overflow: 'hidden', boxShadow: 'var(--shadow)' }}>
+            <BeforeAfter bg="#ffffff" ratio={0.92} watermark={false} />
+          </div>
+          <p className="pa-small" style={{ marginTop: 10 }}>
+            Sample illustration. Your preview uses your own photo, free, before you pay.
+          </p>
+
+          <p id="how-it-works" className="pa-eyebrow" style={{ scrollMarginTop: 16, marginTop: 26 }}>How it works</p>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {steps.map(([n, t, d], i) => (
               <div key={n} style={{ display: 'flex', gap: 16, alignItems: 'baseline', padding: '14px 0',
@@ -88,11 +131,17 @@ export function LandingScreen({ go }: ScreenProps) {
             </div>
           </div>
           <p className="pa-small" style={{ marginTop: 10, display: 'flex', gap: 6, alignItems: 'center' }}>
-            <Icon name="check" size={13} sw={2.4} style={{ color: 'var(--ok)' }} />Free preview. Printed sets delivered nationwide, softcopy included.
+            <Icon name="check" size={13} sw={2.4} style={{ color: 'var(--ok)' }} />Free preview. Printed sets include delivery and the softcopy.
           </p>
           <p className="pa-small" style={{ marginTop: 7, display: 'flex', gap: 6, alignItems: 'center' }}>
-            <Icon name="doc" size={13} sw={2} style={{ color: 'var(--muted)' }} />Sized for NBI, school, work and visa submissions.
+            <Icon name="clock" size={13} sw={2} style={{ color: 'var(--muted)' }} />Delivery in 2–4 days within Metro Manila, 5–7 days in the provinces.
           </p>
+          <p className="pa-small" style={{ marginTop: 7, display: 'flex', gap: 6, alignItems: 'center' }}>
+            <Icon name="doc" size={13} sw={2} style={{ color: 'var(--muted)' }} />Sized for NBI, school and work forms. Visa sizes for US, Japan, Schengen, Saudi, UK and more.
+          </p>
+
+          <p id="faq" className="pa-eyebrow" style={{ scrollMarginTop: 16, marginTop: 30 }}>Common questions</p>
+          <FaqList />
         </div>
 
         {/* footer with nav + disclaimer — mobile only */}
@@ -174,6 +223,11 @@ export function UploadScreen({ go, set }: ScreenProps) {
         </div>
 
         {busy && <p className="pa-small" style={{ marginTop: 14 }}>Reading your photo…</p>}
+
+        <p className="pa-small" style={{ marginTop: 14, display: 'flex', gap: 7, alignItems: 'center' }}>
+          <Icon name="shield" size={14} sw={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+          Your photo is used only to make your order. We delete it after delivery.
+        </p>
 
         <div style={{ marginTop: 26 }}>
           <p className="pa-eyebrow">For best results</p>
@@ -313,7 +367,7 @@ export function PreviewScreen({ go, state }: ScreenProps) {
           {(state.studioMode === 'fallback' || state.studioMode === 'cleanup-noprovider' || state.studioMode === 'error') && (
             <div style={{ marginTop: 12 }}>
               <Notice kind="warn" icon="warn">
-                Studio AI didn&rsquo;t run ({state.studioMode}){state.studioDetail ? `: ${state.studioDetail}` : ''}. Showing a basic cleanup instead.
+                The full studio treatment didn&rsquo;t apply this time, so this preview only has a basic cleanup. You can retry on the look step before you pay.
               </Notice>
             </div>
           )}
