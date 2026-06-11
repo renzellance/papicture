@@ -63,7 +63,7 @@ export function LandingScreen({ go }: ScreenProps) {
         {/* brand + nav — mobile only (desktop brand lives in the page header) */}
         <LandingTopBar onSection={scrollToId} />
 
-        <div className="pa-block pa-block-ink" style={{ margin: '4px 14px 0', borderRadius: 'var(--r-lg)', padding: '22px 20px 20px' }}>
+        <div className="pa-block pa-block-ink" style={{ borderRadius: '0 0 var(--r-lg) var(--r-lg)', padding: '24px 18px 22px' }}>
           <h1 className="pa-mega" style={{ color: '#fff' }}>One selfie. Every photo you need to submit.</h1>
           <p className="pa-lead" style={{ color: 'rgba(255,255,255,.8)', marginTop: 14 }}>
             One selfie, sized correctly for Philippine IDs, visas and work profiles.
@@ -97,7 +97,7 @@ export function LandingScreen({ go }: ScreenProps) {
           </div>
         </div>
 
-        <div className="pa-pad" style={{ paddingTop: 24 }}>
+        <div className="pa-pad" style={{ paddingTop: 28 }}>
           <p className="pa-eyebrow">The studio look</p>
           <div style={{ borderRadius: 'var(--r)', overflow: 'hidden', boxShadow: 'var(--shadow)' }}>
             <BeforeAfter bg="#ffffff" ratio={0.92} watermark={false} />
@@ -106,7 +106,7 @@ export function LandingScreen({ go }: ScreenProps) {
             Sample illustration. Your preview uses your own photo, free, before you pay.
           </p>
 
-          <p id="how-it-works" className="pa-eyebrow" style={{ scrollMarginTop: 16, marginTop: 26 }}>How it works</p>
+          <p id="how-it-works" className="pa-eyebrow" style={{ scrollMarginTop: 16, marginTop: 28 }}>How it works</p>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {steps.map(([n, t, d], i) => (
               <div key={n} style={{ display: 'flex', gap: 16, alignItems: 'baseline', padding: '14px 0',
@@ -120,7 +120,7 @@ export function LandingScreen({ go }: ScreenProps) {
             ))}
           </div>
 
-          <div id="pricing" className="pa-card" style={{ padding: '4px 16px', marginTop: 22, scrollMarginTop: 16 }}>
+          <div id="pricing" className="pa-card" style={{ padding: '4px 16px', marginTop: 28, scrollMarginTop: 16 }}>
             <div className="pa-sumrow">
               <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Icon name="mail" size={17} style={{ color: 'var(--accent)' }} /><span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Digital file</span></span>
               <span className="v" style={{ fontFamily: 'var(--font-display)', fontSize: 16 }}>{PRICE.currency}{PRICE.digital}</span>
@@ -140,7 +140,7 @@ export function LandingScreen({ go }: ScreenProps) {
             <Icon name="doc" size={13} sw={2} style={{ color: 'var(--muted)' }} />Sized for NBI, school and work forms. Visa sizes for US, Japan, Schengen, Saudi, UK and more.
           </p>
 
-          <p id="faq" className="pa-eyebrow" style={{ scrollMarginTop: 16, marginTop: 30 }}>Common questions</p>
+          <p id="faq" className="pa-eyebrow" style={{ scrollMarginTop: 16, marginTop: 28 }}>Common questions</p>
           <FaqList />
         </div>
 
@@ -320,7 +320,7 @@ export function ProcessingScreen({ go, state, set }: ScreenProps) {
 
   return (
     <div className="pa-fade" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', color: '#fff' }}>
-      <div style={{ padding: '0 28px' }}>
+      <div style={{ padding: '0 18px', width: '100%', maxWidth: 420, margin: '0 auto' }}>
         <p className="pa-eyebrow" style={{ color: 'rgba(255,255,255,.7)' }}>Working on it</p>
         <h1 className="pa-mega-sm" style={{ color: '#fff' }}>Creating your<br />studio preview…</h1>
 

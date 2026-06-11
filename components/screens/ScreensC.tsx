@@ -278,7 +278,7 @@ export function ConfirmationScreen({ state, reset }: ScreenProps) {
   return (
     <>
       <div className="pa-scroll pa-fade">
-        <div className="pa-block pa-block-accent" style={{ margin: '14px 14px 0', borderRadius: 'var(--r-xl)', padding: '26px 22px 24px' }}>
+        <div className="pa-block pa-block-accent" style={{ borderRadius: '0 0 var(--r-xl) var(--r-xl)', padding: '28px 18px 24px' }}>
           <div style={{ width: 52, height: 52, borderRadius: 99, background: '#fff', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
             <Icon name="check" size={28} sw={2.6} />
           </div>
