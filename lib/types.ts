@@ -36,6 +36,8 @@ export interface Format {
   darkTop?: boolean;
   printSet?: string;
   printPrice?: number;
+  /** combo savings vs buying each size as a separate set (PHP) */
+  save?: number;
   digitalSpec?: string;
   rules?: string[];
   warn?: string;

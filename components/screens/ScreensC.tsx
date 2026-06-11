@@ -37,13 +37,13 @@ export function FulfillmentScreen({ go, state, set }: ScreenProps) {
 
   const digital = {
     id: 'digital', name: 'Digital file', priceLabel: PRICE.currency + PRICE.digital, icon: 'mail',
-    sub: 'Emailed to you',
-    items: ['Full-resolution file, ready to upload or print', 'Works for online forms and IDs', 'Sent right after payment'],
+    sub: 'Ready right after payment',
+    items: ['Full-resolution file, ready to upload or print', 'Works for online forms and IDs', 'Download right after payment'],
   };
   const print = {
     id: 'print', name: 'Printed set, delivered', priceLabel: 'from ' + PRICE.currency + PRICE.printFrom, icon: 'print',
     sub: 'Cut and delivered nationwide',
-    items: ['Printed and cut to size', 'Delivered nationwide by courier', 'Softcopy always included'],
+    items: ['Printed and cut to size', 'Delivery included. 2–4 days Metro Manila, 5–7 days provinces', 'Softcopy always included'],
   };
 
   const cont = () => { set({ fulfillment: choice as Order['fulfillment'] }); go('format'); };
@@ -51,7 +51,9 @@ export function FulfillmentScreen({ go, state, set }: ScreenProps) {
   const Card = (o: typeof digital) => {
     const on = choice === o.id;
     return (
-      <div key={o.id} className="pa-tile" data-sel={on} onClick={() => setChoice(o.id)} style={{ padding: 16 }}>
+      <div key={o.id} className="pa-tile" data-sel={on} onClick={() => setChoice(o.id)} role="button" tabIndex={0}
+           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setChoice(o.id); } }}
+           style={{ padding: 16 }}>
         <div className="pa-tile-check"><Icon name="check" size={14} sw={2.6} /></div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ width: 42, height: 42, borderRadius: 12, background: on ? 'var(--accent)' : 'var(--accent-wash)', color: on ? '#fff' : 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .2s' }}>
@@ -98,21 +100,28 @@ export function FulfillmentScreen({ go, state, set }: ScreenProps) {
 }
 
 /* hoisted so input identity is stable across re-renders */
-function CheckoutField({ value, onChange, label, ph, type = 'text', inputMode, req, area }:
+function CheckoutField({ value, onChange, onBlur, label, ph, type = 'text', inputMode, req, area, error }:
   { value: string; onChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-    label: string; ph: string; type?: string; inputMode?: any; req?: boolean; area?: boolean }) {
+    onBlur?: () => void; label: string; ph: string; type?: string; inputMode?: any;
+    req?: boolean; area?: boolean; error?: string | null }) {
   const im = inputMode || (type === 'tel' ? 'tel' : type === 'email' ? 'email' : 'text');
   return (
     <div className="pa-field">
       <label>{label}{req && <span className="req"> *</span>}</label>
       {area
-        ? <textarea className="pa-textarea" placeholder={ph} value={value} onChange={onChange} />
-        : <input className="pa-input" type={type === 'numeric' ? 'text' : type} placeholder={ph} value={value} onChange={onChange} inputMode={im} />}
+        ? <textarea className="pa-textarea" placeholder={ph} value={value} onChange={onChange} onBlur={onBlur} />
+        : <input className="pa-input" type={type === 'numeric' ? 'text' : type} placeholder={ph} value={value} onChange={onChange} onBlur={onBlur} inputMode={im}
+                 style={error ? { borderColor: 'var(--strict)' } : undefined} />}
+      {error && <span style={{ fontSize: 12, color: 'var(--strict)', fontWeight: 600 }}>{error}</span>}
     </div>
   );
 }
 
 const PAY_METHODS = ['GCash', 'Maya', 'GrabPay', 'ShopeePay', 'Card'];
+
+const validEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(v.trim());
+/* PH mobile: 09xxxxxxxxx, 9xxxxxxxxx or +639xxxxxxxxx, spaces and dashes ignored */
+const validPhone = (v: string) => /^(0|63)?9\d{9}$/.test(v.replace(/[\s\-+()]/g, ''));
 
 /* ============================== CHECKOUT ============================== */
 export function CheckoutScreen({ go, state, set }: ScreenProps) {
@@ -120,9 +129,14 @@ export function CheckoutScreen({ go, state, set }: ScreenProps) {
   const [f, setF] = useState({ name: '', email: '', phone: '', street: '', barangay: '', city: '', province: '', zip: '', notes: '' });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const upd = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((s) => ({ ...s, [k]: e.target.value }));
+  const blur = (k: keyof typeof f) => () => setTouched((t) => ({ ...t, [k]: true }));
 
-  const valid = f.name && /\S+@\S+\.\S+/.test(f.email) && f.phone
+  const emailErr = touched.email && f.email && !validEmail(f.email) ? 'Check the email address.' : null;
+  const phoneErr = touched.phone && f.phone && !validPhone(f.phone) ? 'Use a PH mobile number, e.g. 09XX XXX XXXX.' : null;
+
+  const valid = f.name && validEmail(f.email) && validPhone(f.phone)
     && (!isPrint || (f.street && f.barangay && f.city && f.province && f.zip));
 
   const pay = async () => {
@@ -172,8 +186,8 @@ export function CheckoutScreen({ go, state, set }: ScreenProps) {
           <p className="pa-eyebrow" style={{ marginTop: 22 }}>Your details</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <CheckoutField value={f.name} onChange={upd('name')} label="Full name" ph="Juan Dela Cruz" req />
-            <CheckoutField value={f.email} onChange={upd('email')} label="Email" ph="you@email.com" type="email" req />
-            <CheckoutField value={f.phone} onChange={upd('phone')} label="Mobile number" ph="+63 9XX XXX XXXX" type="tel" req />
+            <CheckoutField value={f.email} onChange={upd('email')} onBlur={blur('email')} error={emailErr} label="Email" ph="you@email.com" type="email" req />
+            <CheckoutField value={f.phone} onChange={upd('phone')} onBlur={blur('phone')} error={phoneErr} label="Mobile number" ph="09XX XXX XXXX" type="tel" req />
           </div>
 
           {isPrint && <>
@@ -209,9 +223,13 @@ export function CheckoutScreen({ go, state, set }: ScreenProps) {
 
           <div className="pa-card-flat" style={{ padding: '4px 14px', marginTop: 16 }}>
             <div className="pa-sumrow"><span className="k">{isPrint ? 'Printed set, delivered' : 'Digital file'}</span><span className="v">{PRICE.currency}{state.price}</span></div>
+            {isPrint && <div className="pa-sumrow"><span className="k">Nationwide delivery</span><span className="v" style={{ color: 'var(--ok)' }}>Included</span></div>}
             <div className="pa-sumrow"><span className="k">Full resolution, no watermark</span><span className="v" style={{ color: 'var(--ok)' }}>Included</span></div>
             <div className="pa-sumrow"><span className="k" style={{ fontWeight: 700, color: 'var(--ink)', fontSize: 14 }}>Total</span><span className="v" style={{ fontFamily: 'var(--font-display)', fontSize: 18 }}>{PRICE.currency}{state.price}.00</span></div>
           </div>
+          <p className="pa-small" style={{ marginTop: 10 }}>
+            If a file is unusable because of an error on our side, we reprocess or refund it. See the <a href="/terms" target="_blank" style={{ color: 'var(--accent-ink)', fontWeight: 700 }}>terms</a>.
+          </p>
 
           {err && <div style={{ marginTop: 12 }}><Notice kind="warn" icon="warn">{err}</Notice></div>}
           <div style={{ height: 6 }} />
@@ -260,7 +278,7 @@ export function ConfirmationScreen({ state, reset }: ScreenProps) {
   return (
     <>
       <div className="pa-scroll pa-fade">
-        <div className="pa-block pa-block-accent" style={{ margin: '14px 14px 0', borderRadius: 'var(--r-xl)', padding: '26px 22px 24px' }}>
+        <div className="pa-block pa-block-accent" style={{ borderRadius: '0 0 var(--r-xl) var(--r-xl)', padding: '28px 18px 24px' }}>
           <div style={{ width: 52, height: 52, borderRadius: 99, background: '#fff', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
             <Icon name="check" size={28} sw={2.6} />
           </div>
@@ -289,10 +307,10 @@ export function ConfirmationScreen({ state, reset }: ScreenProps) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', gap: 11, alignItems: 'flex-start', padding: '13px 14px', background: '#fff', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)' }}>
-              <Icon name="mail" size={20} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 1 }} />
+              <Icon name="download" size={20} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 1 }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700 }}>Your photo is on its way to your inbox</div>
-                <div className="pa-small" style={{ marginTop: 2 }}>We will email the full-resolution files to {state.email || 'your inbox'} in a few minutes.</div>
+                <div style={{ fontSize: 13.5, fontWeight: 700 }}>Save your photo now</div>
+                <div className="pa-small" style={{ marginTop: 2 }}>Use the download button to save the full-resolution file. A copy also goes to {state.email || 'your email'}.</div>
               </div>
             </div>
             {isPrint && (

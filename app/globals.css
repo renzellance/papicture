@@ -166,13 +166,34 @@ html, body { margin: 0; padding: 0; height: 100%; background: #d9d4ca; overscrol
 
 .pa-iconbtn {
   appearance: none; cursor: pointer;
-  width: 40px; height: 40px; border-radius: var(--pill);
+  width: 44px; height: 44px; border-radius: var(--pill);
   background: #fff; border: 1px solid var(--line);
   display: flex; align-items: center; justify-content: center;
   color: var(--ink); box-shadow: var(--shadow-sm);
-  transition: transform .12s ease;
+  transition: transform .12s ease, background .15s ease;
 }
 .pa-iconbtn:active { transform: scale(.92); }
+
+/* ---- keyboard focus (visible ring on every interactive element) ---- */
+.pa-btn:focus-visible, .pa-iconbtn:focus-visible, .pa-tile:focus-visible,
+.pa-swatch:focus-visible, .pa-seg button:focus-visible, .pa-ba-tag:focus-visible,
+.pa-menu-btn:focus-visible, .pa-menu-item:focus-visible,
+.pa-navlink:focus-visible, .pa-brand:focus-visible, .pa-doc-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- pointer hover (desktop only; never sticky on touch) ---- */
+@media (hover: hover) and (pointer: fine) {
+  .pa-btn-primary:hover { background: var(--accent-press); }
+  .pa-btn-ghost:hover { background: var(--paper-2); }
+  .pa-btn-dark:hover { background: var(--ink-2); }
+  .pa-btn-quiet:hover { color: var(--accent-press); }
+  .pa-iconbtn:hover { background: var(--paper-2); }
+  .pa-tile:hover:not([data-sel="true"]) { border-color: var(--faint); box-shadow: var(--shadow-sm); }
+  .pa-swatch:hover { transform: scale(1.1); }
+  .pa-menu-btn:hover { background: var(--paper-2); }
+}
 
 /* ---- cards ---- */
 .pa-card {
@@ -251,7 +272,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: #d9d4ca; overscrol
 
 .pa-topbar {
   flex-shrink: 0;
-  padding: 8px 16px 10px;
+  padding: 8px 18px 10px;
   display: flex; flex-direction: column; gap: 9px;
   background: var(--paper);
 }
@@ -381,7 +402,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: #d9d4ca; overscrol
   background: #fff; border: 1.5px solid var(--line); border-radius: var(--r-sm);
   padding: 13px 14px; width: 100%; transition: border-color .15s ease, box-shadow .15s ease;
 }
-.pa-input::placeholder, .pa-textarea::placeholder { color: var(--faint); }
+.pa-input::placeholder, .pa-textarea::placeholder { color: var(--muted); }
 .pa-input:focus, .pa-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
 .pa-textarea { resize: none; min-height: 76px; line-height: 1.45; }
 

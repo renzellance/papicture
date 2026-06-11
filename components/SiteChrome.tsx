@@ -13,6 +13,7 @@ type Item = { label: string; section?: string; href?: string };
 const SECTIONS: Item[] = [
   { label: 'How it works', section: 'how-it-works' },
   { label: 'Pricing', section: 'pricing' },
+  { label: 'FAQ', section: 'faq' },
 ];
 const LEGAL: Item[] = [
   { label: 'Privacy', href: '/privacy' },

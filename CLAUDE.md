@@ -7,7 +7,7 @@ current when decisions change.
 
 **papicture** — a mobile-first web app: one selfie → every submission-ready
 photo a Filipino needs (IDs, visas, work/profile headshots). Sold as a **digital
-file** (₱149) or a **printed set delivered nationwide** (from ₱249).
+file** (₱149) or a **printed set delivered nationwide** (from ₱199).
 
 Origin: a Claude Design HTML/CSS prototype, reimplemented as a real Next.js app.
 The original design bundle (chats + prototype) is the source of intent — its copy
@@ -89,6 +89,19 @@ lib/types.ts            Order + catalog types
   reachable via `/#…` hash from the legal routes); Privacy / Terms are real routes;
   Contact is a mailto (`hello@papicture.com`, a placeholder address). The standard
   disclaimer lives in the footer on both platforms.
+
+### Brand assets & landing trust layer
+- `app/icon.png`, `app/apple-icon.png`, `app/opengraph-image.png` are generated
+  by `scripts/gen-assets.mjs` (sharp + SVG, ID-photo card motif; needs Space
+  Grotesk installed locally). Outputs are committed; rerun only on brand change.
+  `app/manifest.ts` provides the web manifest; OG/Twitter meta in `app/layout.tsx`
+  (`NEXT_PUBLIC_SITE_URL` sets metadataBase).
+- Landing carries a placeholder before/after slider ("Sample illustration" —
+  swap for a real pair once AI gen is live), an FAQ accordion (`#faq`, in nav),
+  and the delivery promise: **delivery included, 2–4 days Metro Manila, 5–7 days
+  provinces** — keep this consistent across landing, fulfillment and checkout.
+- Checkout validates email + PH mobile (09XX/+639) inline; refund line links to
+  terms; upload screen states photos are deleted after delivery (matches privacy).
 
 ## Conventions
 
